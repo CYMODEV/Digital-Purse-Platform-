@@ -54,3 +54,31 @@ To request access to the **Technical Whitepaper** or **Developer API**, please c
 
 ---
 *© 2025 Digital Purse Inc. All Rights Reserved. "USD-B", "Skeuomorphic Stack", and the "Swipe-to-Settle" gesture are protected intellectual property.*
+# High-Level Architecture
+
+## 1. The Asset Layer (USD-B)
+USD-B is an ERC-20 compatible stablecoin designed with **Controllable Electronic Record (CER)** compliance features (UCC Article 12).
+* **Backing:** 100% backed by Cash & Short-Term U.S. Treasuries.
+* **Transparency:** Real-time Proof-of-Reserves (PoR) integration.
+
+## 2. The Interaction Layer (Mobile Client)
+The mobile application is built on a dual-engine framework:
+* **The Ledger Engine:** Handles cryptographic signing, key reconstruction, and blockchain RPC calls.
+* **The Visual Engine:** A dedicated Unity/Metal rendering pipeline that simulates physics (mass, friction, gravity) for the digital bills. *Note: This engine operates in a secure display layer to prevent capture.*
+
+## 3. The Custody Layer
+We employ a **Zero-Knowledge Recovery** model.
+* **Shard A:** Stored in the User's Secure Enclave (iOS/Android).
+* **Shard B:** Encrypted and stored in the Cloud.
+* **Recovery:** Shard B can *only* be decrypted by a realtime biometric proof from the user. The ePurse backend never sees the unencrypted private key.
+INTELLECTUAL PROPERTY NOTICE
+
+The concepts, designs, and methods described in this repository are the subject of pending patent applications in the United States and other jurisdictions.
+
+Protected subject matter includes, but is not limited to:
+1.  The method of visually representing a numerical balance as a dynamic stack of 3D objects.
+2.  The method of transferring value via a directional "swipe" gesture of a graphical object.
+3.  The system for offline peer-to-peer transfer of signed cryptographic payloads via NFC.
+4.  The "Hybrid-Custody" key reconstruction mechanism using biometric inputs.
+
+Any unauthorized reproduction, reverse engineering, or implementation of these features constitutes a violation of our intellectual property rights.
