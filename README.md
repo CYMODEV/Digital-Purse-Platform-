@@ -50,7 +50,7 @@ Solving the "Lost Key" dilemma without becoming a bank.
 Access to the source code is currently restricted to authorized partners and investors under a strict Non-Disclosure Agreement (NDA).
 
 To request access to the **Technical Whitepaper** or **Developer API**, please contact:
-**partners@digitalpurse.app
+**cymo1@outlook.com
 
 ---
 *© 2025 Digital Purse Inc. All Rights Reserved. "USD-B", "Skeuomorphic Stack", and the "Swipe-to-Settle" gesture are protected intellectual property.*
