@@ -70,7 +70,7 @@ The mobile application is built on a dual-engine framework:
 We employ a **Zero-Knowledge Recovery** model.
 * **Shard A:** Stored in the User's Secure Enclave (iOS/Android).
 * **Shard B:** Encrypted and stored in the Cloud.
-* **Recovery:** Shard B can *only* be decrypted by a realtime biometric proof from the user. The ePurse backend never sees the unencrypted private key.
+* **Recovery:** Shard B can *only* be decrypted by a realtime biometric proof from the user. The Digital Purse backend never sees the unencrypted private key.
 INTELLECTUAL PROPERTY NOTICE
 
 The concepts, designs, and methods described in this repository are the subject of pending patent applications in the United States and other jurisdictions.
