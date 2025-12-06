@@ -8,21 +8,21 @@ Digital Purse is a financial technology platform that bridges the gap between th
 
 **The standard for Digital Bearer Instruments & Skeuomorphic Finance.**
 
-> **Notice:** This repository contains high-level documentation and public interfaces for the ePurse ecosystem. The core cryptographic implementations and rendering engines are currently closed-source pending patent finalization (USPTO App. No. [Pending]).
+> **Notice:** This repository contains high-level documentation and public interfaces for the ePurse ecosystem. The core cryptographic implementations and rendering engines are currently closed-source pending patent finalization.
 
 ---
 
 ## 📖 Executive Summary
-ePurse is a financial technology platform that bridges the gap between the tactile psychology of physical cash and the efficiency of blockchain settlement. By tokenizing USD reserves into **Visual Bearer Assets**, we reintroduce the "sensation of value" to the digital economy.
+Digital Purse is a financial technology platform that bridges the gap between the tactile psychology of physical cash and the efficiency of blockchain settlement. By tokenizing USD reserves into **Visual Bearer Assets**, we reintroduce the "sensation of value" to the digital economy.
 
-### 💎 The Value Proposition
+###  The Value Proposition
 * **For Users:** A wallet that feels like a wallet. No abstract numbers; just a physics-enabled stack of bills you can swipe, count, and hold.
 * **For Merchants:** Settlement at the speed of cash. Zero chargebacks, <1% fees, and instant finality.
 * **For the Unbanked:** A "Cash-Like" experience that works fully offline, requiring no bank account or credit history.
 
 ---
 
-## ⚡ Key Capabilities
+##  Key Capabilities
 
 ### 1. Skeuomorphic Visualization Engine™
 Unlike traditional wallets that display a database integer (e.g., "$50.00"), ePurse renders value as distinct, interactive 3D objects.
@@ -41,17 +41,17 @@ Solving the "Lost Key" dilemma without becoming a bank.
 
 ---
 
-## 🛡️ Compliance & Safety
+##  Compliance & Safety
 * **Anti-Counterfeit DRM:** Integrated hardware-level protection prevents screenshots or screen recording of the asset visuals, compliant with Title 18 U.S. Code § 474.
 * **Regulation-Ready:** The underlying USD-B asset is architected as a **Permissioned Bearer Instrument**, supporting necessary AML/KYC hooks while preserving privacy for compliant users.
 
 ---
 
-## 📩 Access & Licensing
+##  Access & Licensing
 Access to the source code is currently restricted to authorized partners and investors under a strict Non-Disclosure Agreement (NDA).
 
 To request access to the **Technical Whitepaper** or **Developer API**, please contact:
-**partners@epurse.io**
+**partners@digitalpurse.app
 
 ---
-*© 2025 ePurse Inc. All Rights Reserved. "USD-B", "Skeuomorphic Stack", and the "Swipe-to-Settle" gesture are protected intellectual property.*
+*© 2025 Digital Purse Inc. All Rights Reserved. "USD-B", "Skeuomorphic Stack", and the "Swipe-to-Settle" gesture are protected intellectual property.*
