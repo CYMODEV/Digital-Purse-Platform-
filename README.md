@@ -1,14 +1,13 @@
 # Digital-Purse-Platform-
 Digital Purse is a financial technology platform that bridges the gap between the tactile psychology of physical cash and the efficiency of blockchain settlement. By tokenizing USD reserves into **Visual Bearer Assets**, we reintroduce the "sensation of value" to the digital economy.
-# ePurse Protocol (USD-B)
+# Digital Purse Protocol (USD-B)
 
 [![Status](https://img.shields.io/badge/Status-Private_Beta-orange)]()
 [![License](https://img.shields.io/badge/License-Proprietary-red)]()
-[![Patents](https://img.shields.io/badge/Patents-Pending-blue)]()
 
 **The standard for Digital Bearer Instruments & Skeuomorphic Finance.**
 
-> **Notice:** This repository contains high-level documentation and public interfaces for the ePurse ecosystem. The core cryptographic implementations and rendering engines are currently closed-source pending patent finalization.
+> **Notice:** This repository contains high-level documentation and public interfaces for the Digital Purse ecosystem. The core cryptographic implementations and rendering engines are currently closed-source pending patent application finalization.
 
 ---
 
