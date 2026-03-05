@@ -1,5 +1,6 @@
 # Digital-Purse-Platform-
-Digital Purse is a financial technology platform that bridges the gap between the tactile psychology of physical cash and the efficiency of blockchain settlement. By tokenizing USD reserves into **Visual Bearer Assets**, we reintroduce the "sensation of value" to the digital economy.
+Digital Purse is a financial technology platform that bridges the gap between the tactile psychology of physical cash and the efficiency of blockchain settlement. By tokenizing USD reserves into **Visual Bearer Assets**, we reintroduce the "sensation of value" to the digital economy. 
+Financial Investor bearercard.cb.id
 # Digital Purse Protocol (USD-B)
 
 [![Status](https://img.shields.io/badge/Status-Private_Beta-orange)]()
