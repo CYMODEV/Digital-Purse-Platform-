@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>cpurse</title>
+  
+  <!-- PWA / Mobile Meta Tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="cpurse">
+  <meta name="application-name" content="cpurse">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- iOS Home Screen Icon -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23050505' rx='20'/%3E%3Cpath d='M75 25 C 75 10 60 10 50 10 C 25 10 10 25 10 50 C 10 75 25 85 50 85 C 60 85 75 85 75 75 M75 50 L60 50' fill='none' stroke='%23fbbf24' stroke-width='6' stroke-linecap='round' transform='translate(0, 5)'/%3E%3C/svg%3E">
+  
+  <!-- Inline PWA Manifest -->
+  <link id="pwa-manifest" rel="manifest" href="">
+
+  <style>
+    :root {
+      --bg-core: #050508;
+      
+      --gold: #fbbf24;
+      --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+      
+      --accent: #10b981;
+      --danger: #ef4444;
+      --terminal-green: #33ff00;
+      --chiral-cyan: #00f0ff;
+      --chiral-magenta: #ff0055;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --font-main: "SF Pro Display", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      --font-mono: "SF Mono", "Roboto Mono", monospace;
+      
+      --safe-top: env(safe-area-inset-top, 20px);
+      --safe-bottom: env(safe-area-inset-bottom, 20px);
+      
+      /* Glass-Skeuo Tokens */
+      --shadow-out: 8px 8px 16px rgba(0,0,0,0.6), -2px -2px 10px rgba(255,255,255,0.04);
+      --shadow-in: inset 4px 4px 10px rgba(0,0,0,0.7), inset -2px -2px 6px rgba(255,255,255,0.06);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    
+    body {
+      margin: 0; background: #000; color: var(--text-main); font-family: var(--font-main);
+      display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden;
+    }
+
+    /* --- CHASSIS --- */
+    .phone-frame { width: 100%; height: 100%; background: var(--bg-core); position: relative; overflow: hidden; }
+    
+    @media (min-width: 480px) {
+      .phone-frame {
+        width: 360px; height: 720px; border-radius: 44px;
+        box-shadow: 0 0 0 12px #111, 0 30px 60px -15px rgba(0,0,0,0.9), inset 0 0 10px rgba(255,255,255,0.1);
+        border: 1px solid #333;
+      }
+      .phone-frame::before {
+        content: ""; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+        width: 110px; height: 32px; background: #000; border-radius: 16px; z-index: 1000; pointer-events: none;
+        box-shadow: inset 0 -2px 4px rgba(255,255,255,0.1);
+      }
+    }
+
+    .screen {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; position: relative;
+    }
+    
+    /* Dynamic Glassmorphic Background Orbs */
+    .bg-orbs { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(65px); opacity: 0.65;
+      animation: float 14s infinite alternate ease-in-out;
+    }
+    .orb-1 { width: 280px; height: 280px; background: rgba(16, 185, 129, 0.35); top: -60px; left: -60px; }
+    .orb-2 { width: 320px; height: 320px; background: rgba(0, 102, 255, 0.25); bottom: 80px; right: -120px; animation-delay: -5s; }
+    .orb-3 { width: 220px; height: 220px; background: rgba(251, 191, 36, 0.2); top: 35%; left: 45%; transform: translate(-50%, -50%); animation-delay: -9s; }
+    
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 50px) scale(1.15); }
+    }
+
+    .noise-overlay {
+      position: absolute; inset: 0; opacity: 0.05; pointer-events: none; mix-blend-mode: overlay; z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* --- GLASS-SKEUO CORE CLASSES --- */
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(40,40,45,0.4) 0%, rgba(15,15,20,0.6) 100%);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-left: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(0,0,0,0.8);
+      border-right: 1px solid rgba(0,0,0,0.6);
+      box-shadow: var(--shadow-out);
+      border-radius: 24px;
+    }
+
+    .skuo-btn {
+      background: linear-gradient(135deg, rgba(50,50,55,0.5) 0%, rgba(20,20,25,0.7) 100%);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      border-left: 1px solid rgba(255,255,255,0.15);
+      border-bottom: 1px solid rgba(0,0,0,0.8);
+      border-right: 1px solid rgba(0,0,0,0.6);
+      box-shadow: var(--shadow-out);
+      border-radius: 16px;
+      transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+      cursor: pointer;
+    }
+    .skuo-btn:active, .skuo-btn.pressed {
+      transform: translateY(2px) scale(0.97);
+      background: rgba(15,15,20,0.6);
+      box-shadow: var(--shadow-in);
+      border-top: 1px solid rgba(0,0,0,0.6);
+      border-left: 1px solid rgba(0,0,0,0.4);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .skuo-inset {
+      background: rgba(5,5,8,0.5);
+      box-shadow: var(--shadow-in);
+      border-top: 1px solid rgba(0,0,0,0.8);
+      border-left: 1px solid rgba(0,0,0,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+    }
+    
+    .skuo-input {
+      background: rgba(5,5,8,0.7);
+      box-shadow: var(--shadow-in);
+      border-top: 1px solid rgba(0,0,0,0.8);
+      border-left: 1px solid rgba(0,0,0,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: var(--text-main);
+      padding: 14px;
+      width: 100%;
+      outline: none;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      transition: all 0.3s;
+      appearance: none;
+    }
+    .skuo-input:focus {
+      border-bottom: 1px solid var(--accent);
+      box-shadow: var(--shadow-in), 0 0 10px rgba(16,185,129,0.2);
+    }
+    .skuo-input::placeholder { color: #64748b; }
+
+    .glass-header {
+      background: rgba(10, 10, 15, 0.4);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    /* --- HEADER --- */
+    .app-header {
+      padding: calc(var(--safe-top) + 16px) 24px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 50;
+      transition: background 0.3s, backdrop-filter 0.3s, border-bottom 0.3s, box-shadow 0.3s;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    
+    .logo-container { width: 32px; height: 32px; position: relative; }
+    .logo-svg path {
+      fill: none; stroke: var(--gold); stroke-width: 2.5; stroke-linecap: round;
+      stroke-dasharray: 60; stroke-dashoffset: 60; animation: drawLogo 3s ease-in-out infinite;
+    }
+    
+    .header-text h1 { font-size: 20px; margin: 0; font-weight: 800; letter-spacing: -0.5px; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+    .header-text span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+    
+    #offline-banner {
+      background: linear-gradient(90deg, #991b1b, var(--danger)); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 1px;
+      text-align: center; padding: 6px; display: none; text-transform: uppercase;
+      z-index: 100; position: relative; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+    }
+    #offline-banner.active { display: block; }
+
+    /* --- SCROLL VIEW --- */
+    .scroll-view {
+      flex: 1; overflow-y: auto; padding: 0 20px 140px; 
+      scrollbar-width: none; scroll-behavior: smooth; perspective: 1000px;
+      -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; z-index: 10;
+    }
+
+    /* --- FILTERS --- */
+    .filter-row {
+      display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 8px; padding-top: 4px;
+      scrollbar-width: none;
+    }
+    .filter-chip {
+      padding: 8px 18px; font-size: 11px; font-weight: 700; color: var(--text-muted);
+      white-space: nowrap; border-radius: 20px;
+    }
+    .filter-chip.active { color: var(--gold); border-color: rgba(251, 191, 36, 0.5); box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(251, 191, 36, 0.2); background: rgba(15,15,20,0.8); }
+
+    /* --- NOTES --- */
+    .note-container { perspective: 1000px; margin-bottom: 20px; height: 180px; width: 100%; }
+    .note-card {
+      position: relative; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d; cursor: pointer;
+    }
+    .note-card.flipped { transform: rotateY(180deg); }
+    .note-face {
+      position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+      border-radius: 20px; overflow: hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+      border-right: 1px solid rgba(0, 0, 0, 0.4);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 2px 20px rgba(255,255,255,0.1);
+    }
+    
+    .note-tint { position: absolute; inset: 0; opacity: 0.45; mix-blend-mode: overlay; }
+    .note-front[data-source="GENESIS"] .note-tint { background: linear-gradient(135deg, #666, #111); }
+    .note-front[data-source="PAYPAL"] .note-tint { background: linear-gradient(135deg, #0070ba, #003087); }
+    .note-front[data-source="CASHAPP"] .note-tint { background: linear-gradient(135deg, #00d632, #008f21); }
+    .note-front[data-source="TREASURY"] .note-tint { background: linear-gradient(135deg, #8b9e43, #1f2e21); }
+    .note-front[data-source="ETHEREUM"] .note-tint { background: linear-gradient(135deg, #888, #3c3c3d); }
+    .note-front[data-source="POS_SETTLEMENT"] .note-tint { background: linear-gradient(135deg, var(--accent), #004d40); }
+    
+    .note-pattern {
+      position: absolute; inset: 0; opacity: 0.15;
+      background-image: repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px);
+    }
+    .note-hologram {
+      position: absolute; right: 20px; top: 0; bottom: 0; width: 40px;
+      background: linear-gradient(135deg, transparent 35%, rgba(255,255,255,0.5) 50%, transparent 65%);
+      background-size: 200% 200%; animation: shine 5s infinite linear;
+      border-left: 1px solid rgba(255,255,255,0.15); mix-blend-mode: soft-light;
+    }
+    @keyframes shine { 0% {background-position: 200% 0;} 100% {background-position: -200% 0;} }
+    
+    .note-content { position: relative; z-index: 2; padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .note-value { font-size: 46px; font-weight: 800; letter-spacing: -2px; text-shadow: 0 4px 15px rgba(0,0,0,0.6); color: #fff; }
+    .note-meta { font-family: var(--font-mono); font-size: 9px; opacity: 0.9; letter-spacing: 1px; color: #f1f5f9; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    .note-back { transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+    .note-lore { font-size: 11px; color: #fff; margin-bottom: 16px; font-style: italic; line-height: 1.5; font-weight: 400; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+    /* --- TOGGLE SWITCH (GLASS-SKEUO) --- */
+    .toggle-switch { 
+      width: 48px; height: 26px; position: relative; transition: all 0.3s; 
+      border-radius: 13px;
+    }
+    .toggle-switch.active { background: rgba(16, 185, 129, 0.2); }
+    .toggle-switch.active .toggle-knob { 
+      transform: translateX(22px); 
+      background: var(--accent); 
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.6), inset 1px 1px 2px rgba(255,255,255,0.5); 
+      border-color: rgba(255,255,255,0.4);
+    }
+    .toggle-knob { 
+      width: 20px; height: 20px; background: #64748b; border-radius: 50%; 
+      position: absolute; top: 2px; left: 3px; 
+      transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.7, 1), background 0.3s; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 1px 1px 2px rgba(255,255,255,0.3);
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+    
+    .status-light { width: 10px; height: 10px; border-radius: 50%; background: #333; margin-right: 10px; transition: all 0.3s; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
+    .status-light.on { background: var(--accent); box-shadow: 0 0 12px var(--accent), inset 1px 1px 4px rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.5); }
+
+    /* --- LIQUIDITY CHART --- */
+    .liquidity-chart {
+      height: 70px; display: flex; align-items: flex-end; gap: 6px; padding: 0 4px; margin-bottom: 24px;
+    }
+    .chart-bar { flex: 1; border-radius: 6px 6px 0 0; transition: height 0.5s ease, background 0.5s ease; border: 1px solid rgba(255,255,255,0.15); border-bottom: none; }
+
+    /* --- DOCK (SKEUOMORPHIC SHELF) --- */
+    .dock {
+      position: absolute; bottom: 25px; left: 20px; right: 20px; height: 76px;
+      display: flex; justify-content: space-between; align-items: center; padding: 0 12px;
+      z-index: 100; padding-bottom: calc(var(--safe-bottom) * 0.2);
+    }
+    .dock-item { 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      width: 56px; height: 56px; border-radius: 18px; color: var(--text-muted); 
+      transition: all 0.2s; cursor: pointer;
+      background: transparent; border: 1px solid transparent;
+    }
+    .dock-item.active { 
+      color: var(--gold); 
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.2) 100%);
+      box-shadow: inset 2px 2px 4px rgba(255,255,255,0.1), inset -2px -2px 6px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4); 
+      border-top: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.8);
+      transform: translateY(2px);
+    }
+    .dock-item svg { width: 24px; height: 24px; stroke-width: 2.2; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+    .dock-item.active svg { filter: drop-shadow(0 0 8px rgba(251,191,36,0.6)); }
+    .dock-item span { font-size: 9px; font-weight: 800; margin-top: 5px; letter-spacing: 0.5px; }
+
+    /* --- UI ELEMENTS --- */
+    .toast {
+      position: absolute; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px);
+      color: #fff; padding: 14px 28px;
+      font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 6000;
+      display: flex; align-items: center; gap: 10px; white-space: nowrap; 
+    }
+    .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px; }
+    .key-btn {
+      height: 64px; font-size: 26px; font-weight: 600; color: #fff; display: flex; align-items: center; justify-content: center;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* --- SWIPE TO SETTLE --- */
+    .swipe-container {
+      width: 100%; height: 68px; margin-top: 30px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: none; border-radius: 34px;
+    }
+    .swipe-text {
+      font-size: 15px; font-weight: 800; color: var(--gold); letter-spacing: 3px;
+      pointer-events: none; opacity: 0.8; transition: opacity 0.3s;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    .swipe-knob {
+      position: absolute; left: 6px; top: 6px; width: 56px; height: 56px;
+      background: var(--gold-gradient); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; cursor: grab;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 2px 2px 6px rgba(255,255,255,0.6), inset -2px -2px 6px rgba(0,0,0,0.4); 
+      z-index: 2; border: 1px solid rgba(255,255,255,0.4);
+    }
+    .swipe-knob:active { cursor: grabbing; box-shadow: 0 2px 6px rgba(0,0,0,0.6), inset 4px 4px 8px rgba(0,0,0,0.5); }
+    .swipe-progress {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+      background: rgba(251, 191, 36, 0.2); border-radius: 34px 0 0 34px;
+      pointer-events: none; transition: background 0.3s;
+      box-shadow: inset 0 0 15px rgba(251, 191, 36, 0.4);
+    }
+
+    /* --- FORGE --- */
+    .forge-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding-bottom: 100px; }
+    .forge-btn {
+      width: 220px; height: 220px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 4px 4px 10px rgba(255,255,255,0.1), inset -4px -4px 15px rgba(0,0,0,0.8);
+      border: 1px solid rgba(255,255,255,0.05); background: linear-gradient(135deg, rgba(30,30,35,0.8) 0%, rgba(10,10,12,0.9) 100%);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .forge-btn:active { 
+      transform: scale(0.96); 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 8px 8px 20px rgba(0,0,0,0.9), inset -2px -2px 10px rgba(255,255,255,0.05);
+    }
+    .forge-progress {
+      position: absolute; inset: -8px; border-radius: 50%; 
+      background: conic-gradient(var(--gold) 0%, transparent 0);
+      mask: radial-gradient(transparent 68%, black 69%); -webkit-mask: radial-gradient(transparent 68%, black 69%);
+      filter: drop-shadow(0 0 8px rgba(251,191,36,0.6));
+    }
+
+    /* Modals */
+    .overlay-modal {
+      position: absolute; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s; padding: 20px;
+    }
+    .overlay-modal.visible { opacity: 1; pointer-events: auto; }
+    
+    .receipt-paper {
+      width: 100%; max-width: 320px; background: #fdfdfd; color: #111; padding: 30px;
+      font-family: var(--font-mono); border-radius: 12px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.05);
+      transform: translateY(50px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.03) 20px);
+    }
+    #receipt-modal.visible .receipt-paper { transform: translateY(0); }
+    .tear-line { border-bottom: 2px dashed #888; margin: 20px 0; }
+
+    .audit-box {
+      width: 100%; padding: 24px; transform: scale(0.9); transition: transform 0.3s;
+    }
+    #audit-modal.visible .audit-box { transform: scale(1); }
+    .audit-content { color: var(--text-main); font-family: var(--font-mono); font-size: 12px; line-height: 1.6; min-height: 80px; text-shadow: 0 1px 2px #000; }
+
+    /* Install Banner */
+    #install-banner {
+      position: absolute; bottom: 120px; left: 20px; right: 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      transform: translateY(200%); transition: transform 0.4s ease; z-index: 200; padding: 16px 20px;
+    }
+    #install-banner.visible { transform: translateY(0); }
+
+    /* Scanner Camera View */
+    #scanner-view { position: absolute; inset: 0; background: #000; z-index: 10; display: none; flex-direction: column; }
+    #scanner-view.active { display: flex; }
+    video { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+    .scan-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+    .scan-reticle { width: 260px; height: 260px; border: 3px solid var(--accent); border-radius: 24px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.7), inset 0 0 20px rgba(16,185,129,0.5); position: relative; }
+    .scan-reticle::after { content: ""; position: absolute; height: 3px; width: 100%; background: var(--accent); top: 50%; box-shadow: 0 0 15px var(--accent); animation: scan 2s infinite linear; }
+    @keyframes scan { 0% {top:0} 50% {top:100%} 100% {top:0} }
+
+    /* --- SECURITY LAYER (CHIRAL BIOMETRICS) --- */
+    #security-overlay {
+      position: absolute; inset: 0; background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 1; transition: opacity 0.5s ease-in-out;
+    }
+    #security-overlay.hidden { opacity: 0; pointer-events: none; }
+    
+    .bio-scanner {
+      width: 130px; height: 150px; border-radius: 36px;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; overflow: hidden; 
+      transition: all 0.3s; -webkit-tap-highlight-color: transparent;
+    }
+    .bio-scanner:active { transform: scale(0.96); }
+    .bio-scanner.scanning { border-color: var(--accent); box-shadow: 0 0 40px rgba(16, 185, 129, 0.4), var(--shadow-in); }
+    .bio-scanner.error { border-color: var(--danger); animation: shake 0.4s linear; }
+    
+    .thumb-print {
+      width: 86px; height: 106px; fill: none; stroke: rgba(255,255,255,0.4); stroke-width: 2.5;
+      stroke-linecap: round; transition: all 0.3s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+    }
+    .bio-scanner:hover .thumb-print { stroke: rgba(255,255,255,0.6); }
+    .bio-scanner.scanning .thumb-print { stroke: var(--accent); opacity: 0.9; filter: drop-shadow(0 0 8px var(--accent)); }
+    
+    .chiral-layer {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      pointer-events: none; opacity: 0; transition: opacity 0.2s;
+    }
+    .scanning .chiral-layer { opacity: 1; }
+    .chiral-echo {
+      position: absolute; width: 86px; height: 106px; fill: none; stroke-width: 2.5;
+      stroke-linecap: round; opacity: 0.7; mix-blend-mode: screen; filter: blur(1px);
+    }
+    .chiral-cyan { stroke: var(--chiral-cyan); transform: translateX(-5px); }
+    .chiral-magenta { stroke: var(--chiral-magenta); transform: translateX(5px); }
+    
+    .helix-container {
+      position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+      display: flex; justify-content: center; align-items: center; opacity: 0;
+    }
+    .scanning .helix-container { opacity: 1; animation: fadeIn 0.5s forwards; }
+    .helix-strand {
+      position: absolute; width: 150px; height: 150px; border-radius: 50%;
+      border: 3px solid transparent; border-top-color: var(--chiral-cyan); border-bottom-color: var(--chiral-magenta);
+      animation: spinChiral 2s linear infinite; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+    }
+    .helix-strand:nth-child(2) { width: 120px; height: 120px; animation-direction: reverse; border-left-color: var(--gold); border-right-color: transparent; }
+    
+    @keyframes spinChiral { to { transform: rotate(360deg); } }
+    @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+    
+    .scan-text {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 3px; font-weight: 700;
+      color: var(--text-muted); margin-top: 30px; text-transform: uppercase;
+      height: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .scanning .scan-text { color: var(--accent); animation: pulseText 1s infinite; text-shadow: 0 0 8px rgba(16,185,129,0.5); }
+    @keyframes pulseText { 50% { opacity: 0.5; } }
+
+  </style>
+</head>
+<body>
+
+  <div class="phone-frame">
+    <div class="screen">
+      <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+      </div>
+      <div class="noise-overlay"></div>
+      
+      <!-- Security Overlay -->
+      <div id="security-overlay">
+        <div style="font-size:13px; color:var(--text-muted); letter-spacing:3px; margin-bottom:50px; font-weight:800; text-shadow:0 2px 4px #000;">THUMBCODE SECURITY</div>
+        
+        <div class="bio-scanner skuo-inset" id="bio-scanner" onmousedown="startBioScan()" onmouseup="cancelBioScan()" onmouseleave="cancelBioScan()" ontouchstart="startBioScan()" ontouchend="cancelBioScan()">
+          <svg class="thumb-print" viewBox="0 0 100 120">
+            <path d="M50 110 C 20 110 10 70 10 50 C 10 25 30 10 50 10 C 70 10 90 25 90 50 C 90 70 80 110 50 110" />
+            <path d="M50 20 C 35 20 25 35 25 50 C 25 65 35 80 50 90" />
+            <path d="M50 30 C 40 30 35 40 35 50 C 35 60 40 80 50 80" />
+            <path d="M65 50 C 65 40 60 30 50 30" />
+            <path d="M75 50 C 75 30 60 20 50 20" />
+          </svg>
+          <div class="chiral-layer">
+            <svg class="chiral-echo chiral-cyan" viewBox="0 0 100 120">
+              <path d="M50 110 C 20 110 10 70 10 50 C 10 25 30 10 50 10 C 70 10 90 25 90 50 C 90 70 80 110 50 110" />
+               <path d="M50 20 C 35 20 25 35 25 50 C 25 65 35 80 50 90" />
+            </svg>
+            <svg class="chiral-echo chiral-magenta" viewBox="0 0 100 120">
+               <path d="M50 110 C 20 110 10 70 10 50 C 10 25 30 10 50 10 C 70 10 90 25 90 50 C 90 70 80 110 50 110" />
+               <path d="M50 30 C 40 30 35 40 35 50 C 35 60 40 80 50 80" />
+            </svg>
+          </div>
+          <div class="helix-container">
+            <div class="helix-strand"></div>
+            <div class="helix-strand"></div>
+          </div>
+        </div>
+        
+        <div id="bio-status" class="scan-text">Hold to Scan</div>
+        <div style="margin-top:90px; opacity:0.4; font-size:10px; font-weight:600; text-shadow:0 1px 2px #000;">CHIRAL ENGINE v3.0</div>
+      </div>
+
+      <div id="toast" class="toast glass-panel">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);"></div>
+        <span id="toast-text">Action Complete</span>
+      </div>
+
+      <!-- Receipt Modal -->
+      <div id="receipt-modal" class="overlay-modal">
+        <div class="receipt-paper">
+          <div style="text-align:center; font-weight:900; font-size:22px; margin-bottom:4px; letter-spacing: -1px;">cpurse</div>
+          <div style="text-align:center; font-size:11px; margin-bottom:24px; color:#555;" id="receipt-type">POS SETTLEMENT</div>
+          
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:600;">
+            <span>AMOUNT</span>
+            <span id="receipt-amount">$0.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:#666; font-size:13px;">
+            <span>Network Fee</span>
+            <span>$0.00</span>
+          </div>
+          
+          <div class="tear-line"></div>
+          
+          <div style="display:flex; justify-content:space-between; font-weight:800; font-size:18px;">
+            <span>TOTAL</span>
+            <span id="receipt-total">$0.00</span>
+          </div>
+          
+          <div style="margin-top:30px; font-size:11px; text-align:center; color:#777;">
+            <div id="receipt-date"></div>
+            <div id="receipt-status" style="margin-top:6px; font-weight:800; color:#111; letter-spacing: 1px;">SYNCED TO LEDGER</div>
+          </div>
+          
+          <button onclick="closeReceipt()" style="width:100%; margin-top:24px; padding:14px; background:#111; color:#fff; border:none; border-radius:8px; font-family:var(--font-mono); font-weight:800; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s;">CLOSE</button>
+        </div>
+      </div>
+
+      <!-- Compliance Audit Modal -->
+      <div id="audit-modal" class="overlay-modal">
+        <div class="glass-panel audit-box">
+          <div style="color:var(--accent); font-family:var(--font-mono); font-size:15px; font-weight:700; letter-spacing:2px; margin-bottom:16px; border-bottom:1px dashed var(--accent); padding-bottom:10px; text-shadow:0 0 8px rgba(16,185,129,0.5);">> COMPLIANCE_AUDIT</div>
+          <div id="audit-content" class="audit-content">Executing neural analysis on ledger...<span style="animation:blink 1s infinite">_</span></div>
+          <button onclick="closeAudit()" class="skuo-btn" style="width:100%; margin-top:24px; padding:14px; color:var(--accent); font-family:var(--font-mono); font-size:13px; font-weight:700;">ACKNOWLEDGE</button>
+        </div>
+      </div>
+
+      <!-- PWA Install Banner/Modal -->
+      <div id="install-modal" class="overlay-modal">
+        <div class="glass-panel" style="width: 100%; max-width: 320px; padding: 30px; border-radius: 24px; text-align: center; color: #fff;">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" style="margin-bottom: 20px; filter:drop-shadow(0 4px 8px rgba(251,191,36,0.4));">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          <h2 style="margin:0 0 12px 0; font-size:22px; font-weight:800;">Install cpurse</h2>
+          <div id="install-instructions" style="font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:28px;">
+            To install this app on your device:
+          </div>
+          <button onclick="document.getElementById('install-modal').classList.remove('visible')" class="skuo-btn" style="width:100%; padding:16px; color:#fff; font-weight:800; font-size:14px;">GOT IT</button>
+        </div>
+      </div>
+
+      <div id="install-banner" class="glass-panel">
+        <div>
+          <div style="font-weight:800; font-size:15px; color:#fff;">Install App</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Add to Home Screen for offline access</div>
+        </div>
+        <button onclick="installPWA()" class="skuo-btn" style="padding:10px 20px; color:var(--gold); font-weight:800; font-size:12px;">INSTALL</button>
+      </div>
+
+      <!-- Scanner Camera View -->
+      <div id="scanner-view">
+        <video id="cam-feed" playsinline autoplay muted></video>
+        <div class="scan-overlay">
+          <div class="scan-reticle"></div>
+          <div style="margin-top:24px; font-weight:700; font-size:16px; color:#fff; text-shadow:0 4px 12px #000;">Awaiting P2P Link...</div>
+          <button onclick="stopScanner()" class="skuo-btn" style="margin-top:40px; color:#fff; padding:14px 36px; font-weight:700; font-size:14px;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div id="offline-banner">SYSTEM OFFLINE - TRANSACTIONS QUEUED</div>
+      <div id="app-header" class="app-header glass-header">
+        <div class="header-left">
+          <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 24 24">
+              <path d="M19 7 C 19 4 15 4 12 4 C 6 4 3 7 3 12 C 3 17 6 20 12 20 C 15 20 19 20 19 17 M19 12 L15 12" />
+            </svg>
+          </div>
+          <div class="header-text">
+            <span>cpurse Network</span>
+            <h1 id="page-title">Vault</h1>
+          </div>
+        </div>
+        <div onclick="nav('settings')" class="skuo-btn" style="width:40px; height:40px; border-radius:50%; display:grid; place-items:center; color:var(--text-muted); padding:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+      </div>
+
+      <!-- Main View -->
+      <div id="main-view" class="scroll-view"></div>
+
+      <!-- Navigation Dock -->
+      <div class="dock glass-panel">
+        <div class="dock-item" onclick="nav('mint')" id="nav-mint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+          <span>FORGE</span>
+        </div>
+        <div class="dock-item active" onclick="nav('wallet')" id="nav-wallet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+          <span>VAULT</span>
+        </div>
+        <div class="dock-item" onclick="nav('network')" id="nav-network">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>BRIDGE</span>
+        </div>
+        <div class="dock-item" onclick="nav('pos')" id="nav-pos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3h18v18H3zM8 12h8M12 8v8"/></svg>
+          <span>POS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- GEMINI API INTEGRATION ---
+    const apiKey = "";
+    
+    async function callGemini(prompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const payload = { contents: [{ parts: [{ text: prompt }] }] };
+      const delays = [1000, 2000, 4000, 8000, 16000];
+      
+      for (let i = 0; i < delays.length; i++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || "Data corrupted.";
+        } catch (e) {
+          if (i === delays.length - 1) return "Connection lost. Neural grid unavailable.";
+          await new Promise(r => setTimeout(r, delays[i]));
+        }
+      }
+    }
+
+    // --- STATE ---
+    const DB_KEY = 'cpurse_v2_enhanced';
+    const DEFAULTS = {
+      route: 'wallet',
+      filter: 'ALL',
+      notes: [
+        { id: 'GEN-001', amount: 100, source: 'GENESIS', minted: Date.now(), hash: '0x7F...3A', flipped: false, lore: 'Sector 0: The Prime Origin.' },
+        { id: 'PP-882', amount: 50, source: 'PAYPAL', minted: Date.now()-50000, hash: '0xPP...22', flipped: false, lore: 'Transfer packet intercepted from Old Web.' },
+        { id: 'TR-105', amount: 1000, source: 'TREASURY', minted: Date.now()-100000, hash: '0xUS...T1', flipped: false, lore: 'Federal remnant. High stability.' },
+        { id: 'ETH-554', amount: 10, source: 'ETHEREUM', minted: Date.now()-200000, hash: '0xET...99', flipped: false, lore: 'Gas fees crystalized into value.' },
+        { id: 'CA-221', amount: 20, source: 'CASHAPP', minted: Date.now()-300000, hash: '0xCA...01', flipped: false, lore: 'Peer-to-peer echo.' }
+      ],
+      history: [
+         { title: 'Coffee Shop', amount: -4.50, date: Date.now() - 1000000 },
+         { title: 'Uber Ride', amount: -22.00, date: Date.now() - 5000000 },
+         { title: 'Mint Fee', amount: -0.50, date: Date.now() - 8000000 },
+         { title: 'Transfer In', amount: +500.00, date: Date.now() - 12000000 }
+      ],
+      connections: { paypal: false, cashapp: false, treasury: false, ethereum: false },
+      compliance: { status: 'VERIFIED', riskScore: '1.4', tier: 'LEVEL 2', uccStatus: 'PERFECTED' },
+      settings: { sound: true, haptics: true, faceId: true }, 
+      offlineQueue: [],
+      apiKeys: [],
+      customPartners: []
+    };
+    
+    let state = JSON.parse(localStorage.getItem(DB_KEY)) || DEFAULTS;
+    
+    // Migrations
+    if (typeof state.settings.faceId === 'undefined') state.settings.faceId = true;
+    if (typeof state.offlineQueue === 'undefined') state.offlineQueue = [];
+    if (typeof state.compliance === 'undefined') state.compliance = DEFAULTS.compliance;
+    if (typeof state.compliance.uccStatus === 'undefined') state.compliance.uccStatus = 'PERFECTED';
+    if (typeof state.apiKeys === 'undefined') state.apiKeys = [];
+    if (typeof state.customPartners === 'undefined') state.customPartners = [];
+    
+    if (state.connections && typeof state.connections.eth !== 'undefined') {
+        state.connections.ethereum = state.connections.eth;
+        delete state.connections.eth;
+        save();
+    }
+
+    let forgeProgress = 0;
+    let forgeInterval = null;
+    let scanInterval = null;
+    let scanProgress = 0;
+    let audioCtx = null;
+    let posInput = "0";
+    let deferredPrompt;
+    let swipeCleanup = null;
+    const fixedChartDepths = [30, 45, 60, 25, 50, 80, 40, 60];
+
+    function initPWA() {
+      const manifest = {
+        name: "cpurse", short_name: "cpurse", start_url: ".", display: "standalone",
+        background_color: "#000000", theme_color: "#050505",
+        icons: [{
+          src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48cmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgZmlsbD0nIzA1MDUwNScgcng9JzIwJy8+PHBhdGggZD0nTTc1IDI1IEMgNzUgMTAgNjAgMTAgNTAgMTAgQyAyNSAxMCAxMCAyNSAxMCA1MCBDIDEwIDc1IDI1IDg1IDUwIDg1IEMgNjAgODUgNzUgODUgNzUgNzUgTTc1IDUwIEw2MCA1MCcgZmlsbD0nbm9uZScgc3Ryb2tlPSclMjNmYmJmMjQnIHN0cm9rZS13aWR0aD0nNicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgwLCA1KScvPjwvc3ZnPg==",
+          sizes: "512x512", type: "image/svg+xml"
+        }]
+      };
+      const stringManifest = JSON.stringify(manifest);
+      const blobManifest = new Blob([stringManifest], {type: 'application/manifest+json'});
+      document.getElementById('pwa-manifest').href = URL.createObjectURL(blobManifest);
+
+      if ('serviceWorker' in navigator) {
+        const swCode = `self.addEventListener('install', (e) => self.skipWaiting()); self.addEventListener('activate', (e) => self.clients.claim()); self.addEventListener('fetch', (e) => {});`;
+        const blobSW = new Blob([swCode], {type: 'application/javascript'});
+        navigator.serviceWorker.register(URL.createObjectURL(blobSW)).catch(()=>{});
+      }
+    }
+
+    function checkNetworkStatus() {
+      const banner = document.getElementById('offline-banner');
+      if (!navigator.onLine) {
+        banner.classList.add('active');
+        if (state.route === 'pos') notify("Offline Mode. TXs will be queued.");
+      } else {
+        banner.classList.remove('active');
+        syncOfflineTransactions();
+      }
+    }
+    window.addEventListener('online', checkNetworkStatus);
+    window.addEventListener('offline', checkNetworkStatus);
+
+    async function syncOfflineTransactions() {
+      if (state.offlineQueue.length === 0) return;
+      notify(`Syncing ${state.offlineQueue.length} offline TXs...`);
+      setTimeout(() => {
+        state.offlineQueue.forEach(tx => { state.history.unshift(tx.historyEntry); state.notes.unshift(tx.noteEntry); });
+        state.offlineQueue = []; save(); notify("Offline Sync Complete.");
+        if(state.route === 'wallet') render();
+      }, 2000);
+    }
+
+    function save() { localStorage.setItem(DB_KEY, JSON.stringify(state)); }
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    
+    function playSound(type) {
+      if (!state.settings.sound) return;
+      if (!audioCtx) initAudio();
+      if (!audioCtx) return; 
+
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+
+      if (type === 'tap') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(800, t); osc.frequency.exponentialRampToValueAtTime(100, t + 0.015);
+        gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+        osc.start(t); osc.stop(t + 0.015);
+      } else if (type === 'success') {
+        osc.type='triangle'; osc.frequency.setValueAtTime(600, t); osc.frequency.linearRampToValueAtTime(1200, t+0.2);
+        gain.gain.setValueAtTime(0.1, t); gain.gain.linearRampToValueAtTime(0, t+0.4);
+        osc.start(t); osc.stop(t+0.4);
+      } else if (type === 'scan') {
+        osc.type='sawtooth'; osc.frequency.setValueAtTime(100, t); osc.frequency.linearRampToValueAtTime(400, t+1.5);
+        gain.gain.setValueAtTime(0.02, t); gain.gain.linearRampToValueAtTime(0.05, t+1.5);
+        osc.start(t); osc.stop(t+1.5);
+      }
+    }
+
+    function haptic(pattern) { if(state.settings.haptics && navigator.vibrate) navigator.vibrate(pattern); }
+
+    function startBioScan() {
+      initAudio();
+      const scanner = document.getElementById('bio-scanner');
+      const status = document.getElementById('bio-status');
+      scanner.classList.add('scanning'); status.innerText = "Analyzing Chirality...";
+      playSound('scan'); haptic(50);
+      scanProgress = 0;
+      scanInterval = setInterval(() => {
+        scanProgress += 2;
+        if (scanProgress % 20 === 0) haptic(10);
+        if (scanProgress >= 100) {
+          clearInterval(scanInterval); scanner.classList.remove('scanning');
+          status.innerText = "CHIRAL MATCH CONFIRMED"; status.style.color = "var(--terminal-green)";
+          playSound('success');
+          setTimeout(() => { document.getElementById('security-overlay').classList.add('hidden'); }, 800);
+        }
+      }, 30);
+    }
+    
+    function cancelBioScan() {
+      clearInterval(scanInterval);
+      const scanner = document.getElementById('bio-scanner');
+      const status = document.getElementById('bio-status');
+      scanner.classList.remove('scanning'); status.innerText = "Hold to Scan"; status.style.color = "var(--text-muted)";
+    }
+    
+    function relock() {
+      if(!state.settings.faceId) { notify("Enable Chiral Guard first"); return; }
+      document.getElementById('security-overlay').classList.remove('hidden');
+      document.getElementById('bio-status').innerText = "Hold to Scan";
+      document.getElementById('bio-status').style.color = "var(--text-muted)";
+      playSound('tap');
+    }
+    
+    function factoryReset() {
+      if(confirm("Factory Reset: Wipe all keys, notes, and history?")) {
+        localStorage.removeItem(DB_KEY); localStorage.removeItem('installDismissed'); window.location.reload();
+      }
+    }
+
+    function nav(route) {
+      if(swipeCleanup) swipeCleanup(); 
+      state.route = route; save(); initAudio(); playSound('tap'); haptic(10);
+      document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
+      const navItem = document.getElementById(`nav-${route}`);
+      if(navItem) navItem.classList.add('active');
+      const titles = { mint:'Forge', wallet:'Vault', network:'Bridge', pos:'Terminal', settings:'Settings', dev:'Dev Portal' };
+      document.getElementById('page-title').innerText = titles[route] || 'cpurse';
+      render();
+    }
+    
+    function notify(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-text').innerText = msg;
+      t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 2500); haptic(20);
+    }
+
+    function setFilter(f) { state.filter = f; save(); render(); playSound('tap'); }
+
+    async function apiSettleTransaction(amount) { return new Promise(resolve => setTimeout(() => resolve({ status: 'success' }), 1200)); }
+
+    async function processPOSCharge() {
+      const amt = parseFloat(posInput); if(amt <= 0) return;
+      const historyEntry = { title: 'POS Settlement', amount: amt, date: Date.now() };
+      const noteEntry = { 
+        id: 'POS-'+Math.floor(Math.random()*9000), amount: amt, source: 'POS_SETTLEMENT', minted: Date.now(), 
+        hash: '0x'+Math.random().toString(16).substr(2, 10).toUpperCase(), flipped: false, lore: 'Settled via external terminal link.'
+      };
+
+      if(!navigator.onLine) {
+        state.offlineQueue.push({ historyEntry, noteEntry }); save(); notify("Offline: TX Queued Securely"); showReceiptUI(amt, true);
+      } else {
+        notify("Transmitting to POS API..."); document.getElementById('swipe-text').innerText = "AUTHORIZING...";
+        await apiSettleTransaction(amt);
+        state.history.unshift(historyEntry); state.notes.unshift(noteEntry); save(); showReceiptUI(amt, false);
+      }
+    }
+
+    function showReceiptUI(amt, isOffline) {
+      document.getElementById('receipt-amount').innerText = `¤${amt.toFixed(2)}`;
+      document.getElementById('receipt-total').innerText = `¤${amt.toFixed(2)}`;
+      document.getElementById('receipt-date').innerText = new Date().toLocaleString();
+      const statusEl = document.getElementById('receipt-status');
+      if (isOffline) { statusEl.innerText = "QUEUED (OFFLINE)"; statusEl.style.color = "var(--danger)"; } 
+      else { statusEl.innerText = "SYNCED TO LEDGER"; statusEl.style.color = "var(--accent)"; }
+      document.getElementById('receipt-modal').classList.add('visible'); playSound('success'); haptic([30, 50, 30]);
+    }
+
+    function closeReceipt() { document.getElementById('receipt-modal').classList.remove('visible'); posInput = "0"; render(); }
+
+    function padInput(k) {
+      if(k==='C') posInput='0';
+      else if(posInput==='0') posInput=k;
+      else if(posInput.length<6) posInput+=k;
+      render(); playSound('tap'); haptic(5);
+    }
+    
+    function handleP2PScan() {
+      document.getElementById('scanner-view').classList.add('active'); startScanner();
+      setTimeout(() => {
+        if(document.getElementById('scanner-view').classList.contains('active')) {
+          stopScanner(); notify("P2P Link Established"); posInput = (Math.random() * 100).toFixed(2).toString(); render();
+        }
+      }, 3000);
+    }
+
+    function bindSwipe() {
+      const container = document.getElementById('swipe-container');
+      const knob = document.getElementById('swipe-knob');
+      const progress = document.getElementById('swipe-progress');
+      const text = document.getElementById('swipe-text');
+      if(!container || !knob) return;
+
+      let isDragging = false; let startX = 0;
+      let maxDrag = container.offsetWidth - knob.offsetWidth - 12; // Adjusted for padding
+
+      const onStart = (e) => {
+        if(posInput === "0" || posInput === "0.00") return; 
+        isDragging = true; startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        knob.style.transition = 'none'; progress.style.transition = 'none'; text.style.opacity = '0.3'; haptic(5);
+      };
+
+      const onMove = (e) => {
+        if(!isDragging) return;
+        let diff = (e.type.includes('touch') ? e.touches[0].clientX : e.clientX) - startX;
+        if(diff < 0) diff = 0; if(diff > maxDrag) diff = maxDrag;
+        knob.style.transform = `translateX(${diff}px)`; progress.style.width = `${diff + (knob.offsetWidth/2)}px`;
+        if(diff >= maxDrag - 2) {
+          isDragging = false; knob.style.transform = `translateX(${maxDrag}px)`; text.style.opacity = '0';
+          processPOSCharge(); setTimeout(() => resetSwipe(), 1500);
+        }
+      };
+
+      const onEnd = () => { if(isDragging) { isDragging = false; resetSwipe(); } };
+      
+      const resetSwipe = () => {
+        knob.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; progress.style.transition = 'width 0.4s ease';
+        knob.style.transform = `translateX(0px)`; progress.style.width = `0px`; text.style.opacity = '0.8'; text.innerText = "SWIPE TO SETTLE";
+      }
+
+      knob.addEventListener('mousedown', onStart); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onEnd);
+      knob.addEventListener('touchstart', onStart, {passive: false}); window.addEventListener('touchmove', onMove, {passive: false}); window.addEventListener('touchend', onEnd);
+      swipeCleanup = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onEnd); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onEnd); }
+    }
+
+    // --- DEVELOPER PORTAL LOGIC ---
+    window.generateAPIKey = function() {
+      playSound('tap');
+      const key = 'sk_' + (Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)).toLowerCase();
+      state.apiKeys.unshift({ key, created: Date.now() });
+      save();
+      render();
+      notify('API Key Generated');
+    };
+
+    window.revokeAPIKey = function(idx) {
+      playSound('tap');
+      state.apiKeys.splice(idx, 1);
+      save();
+      render();
+      notify('API Key Revoked');
+    };
+
+    window.registerPartner = function() {
+      const name = document.getElementById('reg-name').value;
+      const apy = document.getElementById('reg-apy').value;
+      const type = document.getElementById('reg-type').value;
+      if(!name || !apy) { notify("Fill all fields"); return; }
+      
+      const id = 'prt_' + Math.random().toString(36).substr(2, 6);
+      state.customPartners.push({ id, name, type, apy: apy + '%' });
+      state.connections[id] = false; 
+      save();
+      playSound('success');
+      notify(name + " Node Registered");
+      nav('network');
+    };
+
+    window.toggleConnection = function(partnerId) {
+      state.connections[partnerId] = !state.connections[partnerId];
+      save(); playSound('tap'); render();
+    };
+
+    window.stakeToPartner = function(partnerId) {
+      const index = state.notes.findIndex(n => n.source === 'GENESIS');
+      if (index === -1) { notify("Requires raw GENESIS liquidity to stake."); return; }
+      notify("Securing asset: Filing UCC-1 Statement...");
+      
+      setTimeout(() => {
+        const note = state.notes.splice(index, 1)[0];
+        note.source = partnerId.toUpperCase();
+        note.lore = `UCC-1 Lien Perfected. Secured and allocated in ${partnerId.toUpperCase()} smart contract for passive yield.`;
+        note.id = partnerId.substr(0,2).toUpperCase() + '-STK-' + Math.floor(Math.random()*9000);
+        note.minted = Date.now(); 
+        
+        state.notes.unshift(note);
+        state.history.unshift({ title: `Allocated to ${partnerId.toUpperCase()} (UCC-1)`, amount: -note.amount, date: Date.now() });
+        save(); playSound('success'); notify(`¤${note.amount} Secured & Allocated`); render();
+      }, 1800);
+    };
+
+    async function runAudit() {
+      if(!navigator.onLine) { notify("Must be online for Audit"); return; }
+      const modal = document.getElementById('audit-modal'); const content = document.getElementById('audit-content');
+      modal.classList.add('visible'); content.innerHTML = "Executing neural analysis on ledger...<span style='animation:blink 1s infinite'>_</span>";
+      
+      const recentTx = state.history.slice(0, 3).map(h => `${h.title}: ${h.amount}`).join(" | ");
+      const prompt = `Analyze these recent digital transactions: [${recentTx}]. You are an automated regulatory compliance AI in a cyberpunk setting. Generate a highly technical, 2-sentence AML (Anti-Money Laundering) and UCC (Uniform Commercial Code) lien audit report. No formatting or quotes.`;
+      
+      try {
+        const response = await callGemini(prompt);
+        content.innerHTML = response + "<br><br><span style='color:var(--accent)'>STATUS: AML CLEARED // UCC PERFECTED</span>";
+      } catch(e) { content.innerHTML = "Audit failed. Regulatory API unresponsive."; }
+    }
+    function closeAudit() { document.getElementById('audit-modal').classList.remove('visible'); }
+
+    function startForge() {
+      initAudio(); const el = document.getElementById('forge-progress');
+      forgeInterval = setInterval(async () => {
+        forgeProgress += 3;
+        if(el) el.style.background = `conic-gradient(var(--gold) ${forgeProgress}%, transparent 0)`;
+        haptic(2);
+        
+        if(forgeProgress >= 100) {
+          clearInterval(forgeInterval); notify("Minting... Decrypting Neural Signature...");
+          const id = 'RM-'+Math.floor(Math.random()*9000);
+          const prompt = `Generate a unique, sci-fi sounding 'Origin Sector' (e.g., 'Sector 7G-Alpha', 'Orbital Node 9') and a brief 1-sentence 'Digital Signature' meaning (e.g., 'Encrypted with residual starlight.') for a newly minted currency note. Format: [Sector] | [Meaning]`;
+          
+          let lore = "Sector Unknown | Digital signature corrupted.";
+          if (navigator.onLine) { try { const raw = await callGemini(prompt); if (raw) lore = raw.replace(/\|/g, " // "); } catch(e) { console.error(e); } } 
+          else { lore = "Local Forge | Minted offline during network partition."; }
+          
+          state.notes.unshift({ id: id, amount: 100, source: 'GENESIS', minted: Date.now(), hash: '0x'+Math.random().toString(16), flipped: false, lore: lore });
+          save(); notify("Minted ¤100 with Neural Signature"); playSound('success');
+          setTimeout(()=>nav('wallet'), 1200); forgeProgress = 0; if(el) el.style.background = 'transparent';
+        }
+      }, 30);
+    }
+    function stopForge() { 
+      if(forgeProgress < 100) { clearInterval(forgeInterval); forgeProgress=0; const el = document.getElementById('forge-progress'); if(el) el.style.background='transparent'; }
+    }
+
+    function render() {
+      const view = document.getElementById('main-view'); const header = document.getElementById('app-header');
+      view.innerHTML = '';
+      if (header) { if (state.route === 'settings' || state.route === 'dev') { header.classList.remove('glass-header'); } else { header.classList.add('glass-header'); } }
+
+      if (state.route === 'wallet') {
+        const filteredNotes = state.filter === 'ALL' ? state.notes : state.notes.filter(n => {
+          if(state.filter === 'FIAT') return ['PAYPAL','CASHAPP'].includes(n.source) || (state.customPartners.find(p => p.id.toUpperCase() === n.source) && state.customPartners.find(p => p.id.toUpperCase() === n.source).type === 'FIAT');
+          if(state.filter === 'CRYPTO') return n.source === 'ETHEREUM' || (state.customPartners.find(p => p.id.toUpperCase() === n.source) && state.customPartners.find(p => p.id.toUpperCase() === n.source).type === 'CRYPTO');
+          if(state.filter === 'GOV') return n.source === 'TREASURY';
+          if(state.filter === 'GEN') return n.source === 'GENESIS';
+          return true;
+        });
+        const total = filteredNotes.reduce((acc, n) => acc + n.amount, 0);
+
+        view.innerHTML = `
+          <div class="glass-panel" style="text-align:center; padding:28px; margin-bottom:20px;">
+            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:3px; margin-bottom:10px; font-weight:700;">${state.filter} Liquidity</div>
+            <div style="font-size:48px; font-weight:800; color:#fff; text-shadow:0 4px 15px rgba(0,0,0,0.6); letter-spacing:-1px;">¤${total.toLocaleString()}</div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-chip skuo-btn ${state.filter==='ALL'?'active':''}" onclick="setFilter('ALL')">All Notes</div>
+            <div class="filter-chip skuo-btn ${state.filter==='GEN'?'active':''}" onclick="setFilter('GEN')">Genesis</div>
+            <div class="filter-chip skuo-btn ${state.filter==='FIAT'?'active':''}" onclick="setFilter('FIAT')">Fiat</div>
+            <div class="filter-chip skuo-btn ${state.filter==='CRYPTO'?'active':''}" onclick="setFilter('CRYPTO')">Crypto</div>
+            <div class="filter-chip skuo-btn ${state.filter==='GOV'?'active':''}" onclick="setFilter('GOV')">Treasury</div>
+          </div>
+          
+          ${filteredNotes.map(note => `
+            <div class="note-container">
+              <div class="note-card ${note.flipped ? 'flipped' : ''}" onclick="this.parentElement.querySelector('.note-card').classList.toggle('flipped'); playSound('tap'); haptic(5);">
+                <div class="note-face note-front" data-source="${note.source}">
+                  <div class="note-tint"></div>
+                  <div class="note-pattern"></div>
+                  <div class="note-content">
+                    <div style="display:flex; justify-content:space-between; opacity:0.95;">
+                      <span style="font-size:11px; font-weight:800; letter-spacing:1px;">${note.source} NOTE</span>
+                      <span style="font-size:11px; font-weight:600; letter-spacing:1px;">SERIES 2026</span>
+                    </div>
+                    <div class="note-value">¤${note.amount}</div>
+                    <div class="note-meta">${note.id} // ${new Date(note.minted).toLocaleDateString()}</div>
+                  </div>
+                  <div class="note-hologram"></div>
+                </div>
+                <div class="note-face note-back">
+                  <div class="note-lore">"${note.lore || 'Data unavailable.'}"</div>
+                  <div class="skuo-inset" style="font-family:monospace; font-size:11px; color:var(--gold); margin-bottom:20px; padding:10px 16px;">${note.hash}</div>
+                  <button class="skuo-btn" onclick="event.stopPropagation(); notify('Copied to Clipboard')" style="color:#fff; padding:12px 24px; font-size:13px; font-weight:700;">Share Note</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+          
+          <div style="font-size:13px; font-weight:800; color:var(--text-muted); margin:32px 0 16px; padding-left:8px; text-transform:uppercase; letter-spacing:2px;">Recent Ledger</div>
+          <div class="glass-panel" style="padding:0 20px; margin-bottom: 20px;">
+             ${state.history.map((h, i) => `
+               <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 0; border-bottom:${i < state.history.length-1 ? '1px solid rgba(255,255,255,0.06)' : 'none'};">
+                 <div>
+                   <div style="font-weight:700; font-size:15px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.8);">${h.title}</div>
+                   <div style="font-size:11px; color:var(--text-muted); margin-top:4px; font-weight:600;">${new Date(h.date).toLocaleDateString()}</div>
+                 </div>
+                 <div style="font-weight:800; font-size:16px; color:${h.amount>0?'var(--accent)':'#fff'}; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${h.amount>0?'+':''}¤${Math.abs(h.amount).toFixed(2)}</div>
+               </div>
+             `).join('')}
+          </div>
+        `;
+      }
+
+      else if (state.route === 'network') {
+        const activeCount = Object.values(state.connections).filter(Boolean).length;
+        const heights = fixedChartDepths.map(h => Math.max(10, h * (activeCount > 0 ? 1 : 0.2)));
+        const availableGen = state.notes.filter(n => n.source === 'GENESIS').reduce((a, b) => a + b.amount, 0);
+
+        const defaultPartners = [
+          { id: 'paypal', name: 'PayPal API', type: 'FIAT', apy: '1.2%' },
+          { id: 'cashapp', name: 'Cash App Network', type: 'FIAT', apy: '0.8%' },
+          { id: 'treasury', name: 'US Treasury Bonds', type: 'GOV', apy: '4.5%' },
+          { id: 'ethereum', name: 'Ethereum Bridge', type: 'CRYPTO', apy: '12.0%' }
+        ];
+        
+        const allPartners = [...defaultPartners, ...state.customPartners];
+
+        view.innerHTML = `
+          <div class="glass-panel" style="padding: 24px; margin-bottom: 28px; position:relative;">
+            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:16px; letter-spacing:1px;">COMPLIANCE & JURISDICTION</div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">AML RISK SCORE</div>
+                <div style="font-size:26px; font-weight:800; color:var(--accent); text-shadow:0 0 10px rgba(16,185,129,0.3);">${state.compliance.riskScore}% <span style="font-size:12px; font-weight:600; color:var(--text-muted);">(LOW)</span></div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-weight:600;">UCC LIEN STATUS</div>
+                <div style="font-size:15px; font-weight:800; color:#fff; text-shadow:0 1px 4px #000;">${state.compliance.uccStatus}</div>
+              </div>
+            </div>
+            <button onclick="runAudit()" class="skuo-btn" style="width:100%; margin-top:24px; padding:14px; color:var(--accent); font-size:12px; font-weight:800; letter-spacing:1px;">REQUEST REGULATORY AUDIT</button>
+          </div>
+
+          <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:16px; padding-left:8px; letter-spacing:1px;">LIQUIDITY PROTOCOLS</div>
+          
+          ${allPartners.map(p => `
+            <div class="glass-panel" style="margin-bottom: 16px; padding: 20px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleConnection('${p.id}')">
+                <div style="display:flex; align-items:center;">
+                  <div class="status-light ${state.connections[p.id] ? 'on' : ''}"></div>
+                  <div>
+                    <div style="font-weight:700; font-size:15px; color:${state.connections[p.id] ? '#fff' : '#94a3b8'}; text-shadow:0 1px 2px rgba(0,0,0,0.5);">${p.name} <span style="font-size:9px; opacity:0.6;">[${p.type}]</span></div>
+                    <div style="font-size:11px; color:${state.connections[p.id] ? 'var(--accent)' : 'var(--text-muted)'}; margin-top:4px; font-weight:600;">Yield: ${p.apy}</div>
+                  </div>
+                </div>
+                <div class="toggle-switch skuo-inset ${state.connections[p.id] ? 'active' : ''}">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              
+              ${state.connections[p.id] ? `
+                <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                   <div style="font-size:12px; color:var(--text-muted); font-weight:600;">Avail: ¤${availableGen} GEN</div>
+                   <button onclick="event.stopPropagation(); stakeToPartner('${p.id}')" class="skuo-btn" style="color:#fff; padding:10px 20px; font-size:11px; font-weight:800; letter-spacing:1px;">ALLOCATE</button>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        `;
+      }
+
+      else if (state.route === 'mint') {
+        view.innerHTML = `
+          <div class="forge-container">
+            <h2 style="font-weight:700; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.8); margin-bottom:50px; letter-spacing:1px;">Sovereign Forge</h2>
+            <div class="forge-btn" onmousedown="startForge()" onmouseup="stopForge()" onmouseleave="stopForge()" ontouchstart="startForge()" ontouchend="stopForge()">
+              <div id="forge-progress" class="forge-progress" style="background:transparent;"></div>
+              <svg width="50" height="50" stroke="currentColor" stroke-width="1.5" style="color:#fff; opacity:0.9; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.8));"><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 22 4-10 4 10"/></svg>
+            </div>
+            <p style="font-size:13px; font-weight:600; color:var(--text-muted); margin-top:50px; text-shadow:0 1px 2px #000;">Hold to perform PoW</p>
+          </div>
+        `;
+      }
+
+      else if (state.route === 'pos') {
+        view.innerHTML = `
+          <div class="skuo-inset" style="padding:28px; font-family:var(--font-mono); color:var(--accent); margin-bottom:28px;">
+            <div style="color: rgba(16,185,129,0.7); font-weight:700; font-size:12px;">> TERMINAL_ID: 99X</div>
+            <div style="font-size:42px; margin-top:16px; font-weight: 800; text-shadow:0 0 15px rgba(16,185,129,0.4);">¤${posInput}</div>
+          </div>
+          <div style="display:flex; gap:16px; margin-bottom:24px;">
+             <button onclick="handleP2PScan()" class="skuo-btn" style="flex:1; height:56px; color:#fff; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; font-size:14px;">Scan P2P QR</button>
+             <button onclick="notify('NFC Listener Active')" class="skuo-btn" style="flex:1; height:56px; color:#fff; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; font-size:14px;">Tap to Sync</button>
+          </div>
+          <div class="keypad-grid">
+            ${[1,2,3,4,5,6,7,8,9,'.',0,'C'].map(k => `<div class="key-btn skuo-btn" onclick="padInput('${k}')">${k}</div>`).join('')}
+          </div>
+          
+          <div id="swipe-container" class="swipe-container skuo-inset">
+            <div id="swipe-progress" class="swipe-progress"></div>
+            <div id="swipe-knob" class="swipe-knob">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+            </div>
+            <div id="swipe-text" class="swipe-text">SWIPE TO SETTLE</div>
+          </div>
+        `;
+        setTimeout(bindSwipe, 50);
+      }
+      
+      else if (state.route === 'dev') {
+        view.innerHTML = `
+          <div style="padding: 0 12px;">
+            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:16px; letter-spacing:2px;">API INTEGRATION</div>
+            <div class="glass-panel" style="padding: 24px; margin-bottom: 28px;">
+              <button onclick="generateAPIKey()" class="skuo-btn" style="width:100%; padding:14px; color:#fff; font-weight:800; font-size:13px; margin-bottom: 20px;">GENERATE NEW API KEY</button>
+              
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                ${state.apiKeys.length === 0 ? `<div style="text-align:center; font-size:12px; color:var(--text-muted); font-style:italic;">No active API keys.</div>` : ''}
+                ${state.apiKeys.map((ak, idx) => `
+                  <div class="skuo-inset" style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-family:var(--font-mono); font-size:12px; color:var(--gold);">${ak.key}</div>
+                      <div style="font-size:9px; color:var(--text-muted); margin-top:6px;">Created: ${new Date(ak.created).toLocaleDateString()}</div>
+                    </div>
+                    <div onclick="revokeAPIKey(${idx})" style="color:var(--danger); font-size:11px; font-weight:800; cursor:pointer; padding:6px;">REVOKE</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:16px; letter-spacing:2px;">PARTNER REGISTRY</div>
+            <div class="glass-panel" style="padding: 24px; margin-bottom:40px;">
+               <input type="text" id="reg-name" class="skuo-input" placeholder="Protocol Name (e.g. Apex Finance)" style="margin-bottom:16px;">
+               <input type="number" id="reg-apy" class="skuo-input" placeholder="Target Yield APY (%)" style="margin-bottom:16px;">
+               <select id="reg-type" class="skuo-input" style="margin-bottom:24px; cursor:pointer;">
+                  <option value="CRYPTO">Web3 / Crypto Protocol</option>
+                  <option value="FIAT">Fiat Payment Gateway</option>
+                  <option value="GOV">Sovereign Treasury</option>
+               </select>
+               <button onclick="registerPartner()" class="skuo-btn" style="width:100%; padding:16px; color:var(--accent); font-weight:800; font-size:14px;">REGISTER PROTOCOL NODE</button>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (state.route === 'settings') {
+         view.innerHTML = `
+          <div style="padding: 0 12px;">
+            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:20px; letter-spacing:2px;">DEVICE CONFIG</div>
+            
+            <div class="glass-panel" style="padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom:12px; cursor: pointer;" onclick="state.settings.sound=!state.settings.sound; save(); render(); playSound('tap');">
+               <div style="font-weight:700; font-size: 16px; color:#fff; text-shadow:0 1px 2px #000;">Sound FX</div>
+               <div class="toggle-switch skuo-inset ${state.settings.sound ? 'active' : ''}"><div class="toggle-knob"></div></div>
+            </div>
+            
+            <div class="glass-panel" style="padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom:12px; cursor: pointer;" onclick="state.settings.haptics=!state.settings.haptics; save(); render(); playSound('tap');">
+               <div style="font-weight:700; font-size: 16px; color:#fff; text-shadow:0 1px 2px #000;">Haptics</div>
+               <div class="toggle-switch skuo-inset ${state.settings.haptics ? 'active' : ''}"><div class="toggle-knob"></div></div>
+            </div>
+            
+            <div class="glass-panel" style="padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom:32px; cursor: pointer;" onclick="state.settings.faceId=!state.settings.faceId; save(); render(); playSound('tap');">
+               <div style="font-weight:700; font-size: 16px; color:#fff; text-shadow:0 1px 2px #000;">Chiral Guard</div>
+               <div class="toggle-switch skuo-inset ${state.settings.faceId ? 'active' : ''}"><div class="toggle-knob"></div></div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div onclick="nav('dev')" class="skuo-btn" style="padding: 20px 24px; color:var(--gold); font-weight:800; font-size:15px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Developer Portal</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              </div>
+
+              <div onclick="relock()" class="skuo-btn" style="padding: 20px 24px; color:var(--accent); font-weight:800; font-size:15px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Relock Vault</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              
+              <div onclick="installPWA()" class="skuo-btn" style="padding: 20px 24px; color:#fff; font-weight:800; font-size:15px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Install App</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </div>
+
+              <div onclick="factoryReset()" class="skuo-btn" style="padding: 20px 24px; color:var(--danger); font-weight:800; font-size:15px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Factory Reset</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    window.onload = () => {
+      if (state.settings.faceId === false) { document.getElementById('security-overlay').classList.add('hidden'); }
+      checkNetworkStatus(); nav(state.route);
+      if(!window.matchMedia('(display-mode: standalone)').matches && !localStorage.getItem('installDismissed')) { setTimeout(() => document.getElementById('install-banner').classList.add('visible'), 3000); }
+      initPWA();
+    };
+    
+    async function startScanner() {
+      try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); document.getElementById('cam-feed').srcObject = stream; } 
+      catch(e) { notify("Camera Error"); setTimeout(stopScanner,1000); }
+    }
+    function stopScanner() {
+      const v = document.getElementById('cam-feed'); if(v.srcObject) v.srcObject.getTracks().forEach(t=>t.stop());
+      document.getElementById('scanner-view').classList.remove('active');
+    }
+    
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+    async function installPWA() {
+      document.getElementById('install-banner').classList.remove('visible');
+      if (deferredPrompt) {
+        deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') { deferredPrompt = null; }
+      } else {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const instructions = document.getElementById('install-instructions');
+        if (isIOS) { instructions.innerHTML = `<div style="margin-bottom:12px;">1. Tap the <strong>Share</strong> button at the bottom of your screen (square with an up arrow).</div><div>2. Scroll down and tap <strong>Add to Home Screen</strong>.</div>`; } 
+        else { instructions.innerHTML = `Click the <strong>Install</strong> icon located on the right side of your browser's address bar, or look for <strong>Install App</strong> in the browser menu.`; }
+        document.getElementById('install-modal').classList.add('visible');
+      }
+    }
+  </script>
+</body>
+</html>
+
+
